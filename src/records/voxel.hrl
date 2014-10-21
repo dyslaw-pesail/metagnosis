@@ -1,0 +1,2 @@
+-include("attributes.hrl").
+-record(voxel, {attributes = #attributes{}}).
