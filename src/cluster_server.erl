@@ -1,7 +1,7 @@
 -module(cluster_server).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/1]).
 -export([init/1,
          handle_call/3,
          handle_cast/2,
@@ -13,12 +13,16 @@
 -record(state, {block = #block{}}).
 -define(TIMEOUT, 10000).
 
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link(Name) ->
+    gen_server:start_link({local, Name}, ?MODULE, [], []).
 
 init([]) ->
     {ok, #state{}, ?TIMEOUT}.
 
+handle_call({get_voxel, Addr}, _From, State) ->
+    {reply, get_voxel(Addr, State#state.block), State};
+handle_call({set_voxel, Addr, Voxel}, _From, State) ->
+    {reply, ok, State#state{block = set_voxel(Addr, State#state.block, Voxel)}};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -109,23 +113,20 @@ validate_voxel(S) when is_record(S, block) ->
          validate_voxel(S#block.c110),
          validate_voxel(S#block.c111)],
     LC = lists:foldl(fun({X,_}, A) -> X + A end, 0, L),
-    NLC = if LC =:= 16 -> 2;
-             LC < 16 andalso LC > 0 -> 1;
-             LC =:= 0 -> 0
-          end,
-    { NLC,
-      S#block{c000 = element(2, lists:nth(1, L)),
-            c001 = element(2, lists:nth(2, L)),
-            c010 = element(2, lists:nth(3, L)),
-            c011 = element(2, lists:nth(4, L)),
-            c100 = element(2, lists:nth(5, L)),
-            c101 = element(2, lists:nth(6, L)),
-            c110 = element(2, lists:nth(7, L)),
-            c111 = element(2, lists:nth(8, L)),
-            attributes = (S#block.attributes)#attributes{fill = 
-                if LC =:= 16 -> full;
-                   LC < 16 andalso LC > 0 -> partial;
-                   LC =:= 0 -> empty
-                end
-            }
-           }}.
+    { (LC+14) div 15,
+      S#block{
+        c000 = element(2, lists:nth(1, L)),
+        c001 = element(2, lists:nth(2, L)),
+        c010 = element(2, lists:nth(3, L)),
+        c011 = element(2, lists:nth(4, L)),
+        c100 = element(2, lists:nth(5, L)),
+        c101 = element(2, lists:nth(6, L)),
+        c110 = element(2, lists:nth(7, L)),
+        c111 = element(2, lists:nth(8, L)),
+        attributes = (S#block.attributes)#attributes{
+            fill = if LC =:= 16 -> full;
+                      LC < 16 andalso LC > 0 -> partial;
+                      LC =:= 0 -> empty
+                   end}
+        }
+    }.
