@@ -1,9 +1,9 @@
--module(mg_services_sup).
+-module(mg_world_sup).
 
 -behaviour(supervisor).
 
 %% API functions
--export([start_link/0]).
+-export([start_link/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -12,18 +12,20 @@
 %%% API functions
 %%%===================================================================
 
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(WorldName) ->
+    supervisor:start_link({local, mg:lists_to_atom([WorldName, "-world_sup"])}, ?MODULE, [WorldName]).
 
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================
 
-init([]) ->
-    WorldSup = {mg_world_sup, {mg_world_sup, start_link, ["entry"]},
-                permanent, infinity, supervisor, [mg_world_sup]},
-    Children = [WorldSup],
-    RestartStrategy = {one_for_one, 0, 1}, 
+init([WorldName]) ->
+    ClusterSup = { mg_cluster_sup, { mg_cluster_sup, start_link, [WorldName] },
+                   permanent, infinity, supervisor, [mg_cluster_sup] },
+    SimulationSup = { mg_simulation_sup, { mg_simulation_sup, start_link, [WorldName] },
+                      permanent, infinity, supervisor, [mg_simulation_sup] },
+    Children = [ClusterSup, SimulationSup],
+    RestartStrategy = {one_for_one, 0, 1},
     {ok, {RestartStrategy, Children}}.
 
 %%%===================================================================
