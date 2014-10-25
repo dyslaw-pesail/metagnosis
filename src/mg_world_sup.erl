@@ -8,23 +8,26 @@
 %% Supervisor callbacks
 -export([init/1]).
 
+-include("defines/block.hrl").
+-include("defines/world.hrl").
+
 %%%===================================================================
 %%% API functions
 %%%===================================================================
 
 start_link(WorldName) ->
-    supervisor:start_link({local, mg:lists_to_atom([WorldName, "-world_sup"])}, ?MODULE, [WorldName]).
+    supervisor:start_link({local, ?WORLD_SUP_NAME(WorldName)}, ?MODULE, [WorldName]).
 
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================
 
 init([WorldName]) ->
-    ClusterSup = { mg_cluster_sup, { mg_cluster_sup, start_link, [WorldName] },
-                   permanent, infinity, supervisor, [mg_cluster_sup] },
-    SimulationSup = { mg_simulation_sup, { mg_simulation_sup, start_link, [WorldName] },
-                      permanent, infinity, supervisor, [mg_simulation_sup] },
-    Children = [ClusterSup, SimulationSup],
+    BlockSup = {?BLOCK_SUP_NAME(WorldName), {mg_block_sup, start_link, [WorldName]},
+                permanent, infinity, supervisor, [mg_block_sup]},
+    SimulationSup = {mg_simulation_sup, {mg_simulation_sup, start_link, [WorldName]},
+                     permanent, infinity, supervisor, [mg_simulation_sup]},
+    Children = [BlockSup, SimulationSup],
     RestartStrategy = {one_for_one, 0, 1},
     {ok, {RestartStrategy, Children}}.
 

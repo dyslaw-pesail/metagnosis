@@ -1,0 +1,1 @@
+-define(WORLD_SUP_NAME(WorldName), mg:lists_to_atom(["mg_world_sup<", WorldName, ">"])).

@@ -1,0 +1,3 @@
+-define(BLOCK_SUP_NAME(WorldName), mg:lists_to_atom(["mg_block_sup<", WorldName, ">"])).
+-define(BLOCK_SRV_NAME(WorldName, BlockCoords), mg:lists_to_atom(["mg_block_srv<", WorldName, ", ", mg:coords_to_list(BlockCoords), ">"])).
+-define(ETS_BLOCK_TO_PID_NAME(WorldName), mg:lists_to_atom(["mg_block_to_pid<", WorldName, ">"])).
