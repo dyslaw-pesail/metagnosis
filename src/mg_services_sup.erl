@@ -29,8 +29,9 @@ start_world_sup(WorldName) ->
 %%%===================================================================
 
 init([]) ->
+    Db = {mg_db_sup, {mg_db_sup, start_link, []}, permanent, infinity, supervisor, [mg_db_sup]},
     RestartStrategy = {one_for_one, 0, 1}, 
-    {ok, {RestartStrategy, []}}.
+    {ok, {RestartStrategy, [Db]}}.
 
 %%%===================================================================
 %%% Internal functions

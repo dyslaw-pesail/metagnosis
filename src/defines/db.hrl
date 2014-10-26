@@ -1,0 +1,1 @@
+-define(WORLD_BLOCK_DB_NAME(WorldName), mg:lists_to_atom([WorldName, "<blocks>"])).

@@ -1,0 +1,3 @@
+-define(DB_PULL_RESULT(Result, RequestRef), {ok, RequestRef, Result}).
+-define(ERROR_DB_PULL_NOT_FOUND, {error, db_pull_not_found}).
+-define(ERROR_DB_TIMEOUT, {error, db_timeout}).
